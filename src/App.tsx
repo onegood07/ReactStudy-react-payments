@@ -1,19 +1,32 @@
+import { useState } from "react";
 import CardForm from "./components/CardForm";
-import styles from "./components/CardForm.module.css";
+import CardFormInput from "./components/CardFormInput";
 import Card from "./components/Card";
 import {
   CARD_FORM_LABELS,
   CARD_LABELS,
   CARD_PLACEHOLDERS,
-} from "./constants/CardConstants";
-import CardFormInput from "./components/CardFormInput";
-import type { ChangeEvent, ExpirationDate, CardNumbers } from "./types/card";
-import type { CardError } from "./types/error";
-import { useState } from "react";
-import { formatStringToUpper, validOwnerName } from "./utils/ValidOwnerName";
-import { convertMonth, validExpirationDate } from "./utils/ValidExpirationDate";
-import { filterNumber } from "./utils/NumberUtils";
-import { validCardNumbersBlock } from "./utils/ValidCardNumbers";
+} from "./constants/textConstants";
+import type {
+  ChangeEvent,
+  ExpirationDate,
+  CardNumbers,
+  CardError,
+  ExpirationDateError,
+  CardNumbersError,
+} from "./types";
+import {
+  formatStringToUpper,
+  validOwnerName,
+  convertMonth,
+  validExpirationDate,
+  filterNumber,
+  filterString,
+  getFirstExpirationErrorMessage,
+  getFirstErrorMessage,
+  validCardNumbersBlock,
+} from "./utils";
+import styles from "./styles/CardForm.module.css";
 
 function App() {
   const [expirationDate, setExpirationDate] = useState<ExpirationDate>({
@@ -31,9 +44,17 @@ function App() {
   const [owner, setOwner] = useState("");
 
   const [cardError, setCardError] = useState<CardError>({
-    cardNumbersError: "",
-    expirationDateError: "",
-    ownerError: "",
+    cardNumbersError: {
+      firstBlock: { hasError: false, errorMessage: "", isDisable: false },
+      secondBlock: { hasError: false, errorMessage: "", isDisable: true },
+      thirdBlock: { hasError: false, errorMessage: "", isDisable: true },
+      fourthBlock: { hasError: false, errorMessage: "", isDisable: true },
+    },
+    expirationDateError: {
+      month: { hasError: false, errorMessage: "" },
+      year: { hasError: false, errorMessage: "" },
+    },
+    ownerError: { hasError: false, errorMessage: "" },
   });
 
   const handleExpirationDateChange = (event: ChangeEvent) => {
@@ -64,33 +85,32 @@ function App() {
   };
 
   const handleOwnerChange = (event: ChangeEvent) => {
+    const value = filterString(event.target.value, 20);
+
     const validResult = validOwnerName(event.target.value);
+
     setCardError((pre) => ({
       ...pre,
       ownerError: validResult,
     }));
-    const ownerName = formatStringToUpper(event.target.value);
+    const ownerName = formatStringToUpper(value);
     setOwner(ownerName);
   };
 
   const handleCardNumbersChange = (event: ChangeEvent) => {
-    let validResult = "";
     const name = event.target.name;
     const value = event.target.value;
-    const filterValue = filterNumber(value, 4);
 
     const numberBlock = {
       ...cardNumbers,
-      [name]: filterValue,
+      [name]: filterNumber(value, 4),
     };
 
-    Object.entries(numberBlock).forEach(([key, value]) => {
-      validResult = validCardNumbersBlock(value);
-    });
+    const result: CardNumbersError = validCardNumbersBlock(numberBlock);
 
     setCardError((pre) => ({
       ...pre,
-      cardNumbersError: validResult,
+      cardNumbersError: result,
     }));
 
     setCardNumbers({
@@ -122,11 +142,18 @@ function App() {
           cardPlaceHolder={CARD_PLACEHOLDERS.CARD_NUMBER}
           handleChange={handleCardNumbersChange}
           width="50px"
+          hasError={
+            cardError.cardNumbersError[key as keyof CardNumbersError].hasError
+          }
+          isDisable={
+            cardError.cardNumbersError[key as keyof CardNumbersError].isDisable
+          }
         />
       ))}
-
       {cardError.cardNumbersError && (
-        <p className={styles.error}>{cardError.cardNumbersError}</p>
+        <p className={styles.error}>
+          {getFirstErrorMessage(cardError.cardNumbersError)}
+        </p>
       )}
 
       <CardForm
@@ -134,7 +161,6 @@ function App() {
         cardFormLabelCaption={CARD_FORM_LABELS.EXPIRATION_DATE_CAPTION}
         cardLabelText={CARD_LABELS.EXPIRATION_DATE}
       />
-
       {Object.entries(expirationDate).map(([key, value]) => (
         <CardFormInput
           key={key}
@@ -147,12 +173,18 @@ function App() {
           }
           handleChange={handleExpirationDateChange}
           width="125px"
+          hasError={
+            cardError.expirationDateError[key as keyof ExpirationDateError]
+              .hasError
+          }
         />
       ))}
-
       {cardError.expirationDateError && (
-        <p className={styles.error}>{cardError.expirationDateError}</p>
+        <p className={styles.error}>
+          {getFirstExpirationErrorMessage(cardError.expirationDateError)}
+        </p>
       )}
+
       <CardForm
         cardFormLabelText={CARD_FORM_LABELS.CARD_OWNER}
         cardLabelText={CARD_LABELS.CARD_OWNER}
@@ -164,9 +196,10 @@ function App() {
         cardPlaceHolder={CARD_PLACEHOLDERS.CARD_OWNER}
         handleChange={handleOwnerChange}
         width="280px"
+        hasError={cardError.ownerError.hasError}
       />
       {cardError.ownerError && (
-        <p className={styles.error}>{cardError.ownerError}</p>
+        <p className={styles.error}>{cardError.ownerError.errorMessage}</p>
       )}
     </>
   );

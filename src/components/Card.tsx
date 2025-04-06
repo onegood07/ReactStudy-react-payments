@@ -1,12 +1,12 @@
-import styles from "./Card.module.css";
-import type { CardNumbers, ExpirationDate } from "../types/card";
-import { hideNumber, setCardLogo } from "../utils/ValidCardNumbers";
+import styles from "../styles/Card.module.css";
+import type { CardNumbers, ExpirationDate } from "../types/cardTypes";
+import { hideNumber, setCardLogo } from "../utils/cardNumberValidators";
 
-type CardProps = {
+interface CardProps {
   cardNumbers: CardNumbers;
   expirationDate: ExpirationDate;
   owner: string;
-};
+}
 
 function Card({ owner, expirationDate, cardNumbers }: CardProps) {
   const expirationMonth = expirationDate.month;

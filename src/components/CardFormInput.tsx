@@ -1,16 +1,16 @@
 import React from "react";
-import type { ChangeEvent } from "../types/card";
-import styles from "./CardFormInput.module.css";
+import type { ChangeEvent } from "../types/cardTypes";
+import styles from "../styles/CardFormInput.module.css";
 
-type CardFormProps = {
+interface CardFormProps {
   name: string;
   cardPlaceHolder: string;
   cardInput: number | string;
   handleChange: (e: ChangeEvent) => void;
   width?: string;
-  disabled?: boolean;
-  isError?: boolean;
-};
+  isDisable?: boolean;
+  hasError?: boolean;
+}
 
 function CardFormInput({
   name,
@@ -18,8 +18,8 @@ function CardFormInput({
   cardInput,
   handleChange,
   width,
-  disabled,
-  isError,
+  isDisable,
+  hasError,
 }: CardFormProps) {
   return (
     <>
@@ -32,9 +32,9 @@ function CardFormInput({
         onChange={handleChange}
         style={{
           width: width,
-          borderColor: isError ? "red" : "#d5d5d5",
+          borderColor: hasError ? "red" : "#d5d5d5",
         }}
-        disabled={disabled}
+        disabled={isDisable}
       ></input>
     </>
   );

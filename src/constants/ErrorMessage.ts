@@ -8,4 +8,5 @@ export const ERROR_MESSAGE = {
   PAST_DATE: "유효기간이 지난 연도입니다.",
   OVER_MAX_VALID_YEAR: "유효기간은 최대 10년까지만 가능합니다.",
   MIN_LENGTH_TWO: "숫자 두 자리를 입력하세요.",
+  REQUIRE_FOUR_DIGIT_NUMBER: "4자리 숫자를 입력하세요.",
 };

@@ -1,10 +1,10 @@
-import styles from "./CardForm.module.css";
+import styles from "../styles/CardForm.module.css";
 
-type CardFormProps = {
+interface CardFormProps {
   cardFormLabelText: string;
   cardFormLabelCaption?: string;
   cardLabelText: string;
-};
+}
 
 function CardForm({
   cardFormLabelText,
