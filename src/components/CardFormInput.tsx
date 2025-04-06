@@ -7,9 +7,9 @@ interface CardFormProps {
   cardPlaceHolder: string;
   cardInput: number | string;
   handleChange: (e: ChangeEvent) => void;
-  width?: string;
+  width: string;
   isDisable?: boolean;
-  hasError?: boolean;
+  hasError: boolean;
 }
 
 function CardFormInput({
