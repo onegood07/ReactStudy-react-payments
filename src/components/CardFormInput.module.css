@@ -1,0 +1,14 @@
+.inputBox {
+  padding: 8px;
+  border-radius: 4px;
+  border: 1.6px solid #ccc;
+  margin-right: 10px;
+}
+
+.error-inputBox {
+  border-color: red;
+}
+
+.not-error-inputBox {
+  border-color: #d5d5d5;
+}
