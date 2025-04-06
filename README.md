@@ -1,7 +1,7 @@
 # react-payments
 
 ## 📂 파일 구조
-
+```
 📦src
 ┣ 📂assets
 ┃ ┣ 📜Mastercard.svg
@@ -38,6 +38,7 @@
 ┣ 📜index.css
 ┣ 📜main.tsx
 ┗ 📜vite-env.d.ts
+```
 
 ## 💳 기능 요구 사항
 
