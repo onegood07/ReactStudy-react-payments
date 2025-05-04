@@ -1,3 +1,3 @@
-export * from "./errorMessage";
+export * from "./errorMessege";
 export * from "./textConstants";
 export * from "./usingNumbers";

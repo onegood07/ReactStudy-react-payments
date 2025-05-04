@@ -1,4 +1,4 @@
-import { ERROR_MESSAGE } from "../constants/errorMessage";
+import { ERROR_MESSAGE } from "../constants";
 import type { ErrorType } from "../types";
 
 // 대문자로 변경

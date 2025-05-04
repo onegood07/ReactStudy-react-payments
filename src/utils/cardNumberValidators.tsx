@@ -1,4 +1,4 @@
-import { ERROR_MESSAGE } from "../constants/errorMessage";
+import { ERROR_MESSAGE } from "../constants";
 import { isOnlyNumber } from "./inputFilters";
 import visa from "../assets/Visa.svg";
 import master from "../assets/Mastercard.svg";
