@@ -1,26 +1,20 @@
-export interface CardError {
-  cardNumbersError: CardNumbersError;
-  expirationDateError: ExpirationDateError;
-  ownerError: ErrorType;
-}
-
 export interface ErrorType {
   hasError: boolean;
   errorMessage: string;
 }
-
-export interface CardNumberBlockError extends ErrorType {
+export interface CardNumberErrorType extends ErrorType {
   isDisable: boolean;
 }
-
-export interface ExpirationDateError {
-  month: ErrorType;
-  year: ErrorType;
-}
-
-export interface CardNumbersError {
-  firstBlock: CardNumberBlockError;
-  secondBlock: CardNumberBlockError;
-  thirdBlock: CardNumberBlockError;
-  fourthBlock: CardNumberBlockError;
-}
+export type CardFormError = {
+  cardNumbers: {
+    firstBlock: CardNumberErrorType;
+    secondBlock: CardNumberErrorType;
+    thirdBlock: CardNumberErrorType;
+    fourthBlock: CardNumberErrorType;
+  };
+  expiration: {
+    month: ErrorType;
+    year: ErrorType;
+  };
+  owner: ErrorType;
+};

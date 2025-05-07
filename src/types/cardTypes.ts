@@ -1,13 +1,29 @@
-export type ChangeEvent = React.ChangeEvent<HTMLInputElement>;
+export type InputName =
+  | "firstBlock"
+  | "secondBlock"
+  | "thirdBlock"
+  | "fourthBlock"
+  | "month"
+  | "year"
+  | "owner";
 
-export interface ExpirationDate {
-  month: string;
-  year: string;
-}
+export type ChangeEvent = React.ChangeEvent<HTMLInputElement> & {
+  target: {
+    name: InputName;
+    value: string;
+  };
+};
 
-export interface CardNumbers {
-  firstBlock: string;
-  secondBlock: string;
-  thirdBlock: string;
-  fourthBlock: string;
-}
+export type CardData = {
+  numbers: {
+    firstBlock: string;
+    secondBlock: string;
+    thirdBlock: string;
+    fourthBlock: string;
+  };
+  expiration: {
+    month: string;
+    year: string;
+  };
+  owner: string;
+};
