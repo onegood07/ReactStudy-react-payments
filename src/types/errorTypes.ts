@@ -6,13 +6,13 @@ export interface CardNumberErrorType extends ErrorType {
   isDisable: boolean;
 }
 export type CardFormError = {
-  cardNumbers: {
+  numbers: {
     firstBlock: CardNumberErrorType;
     secondBlock: CardNumberErrorType;
     thirdBlock: CardNumberErrorType;
     fourthBlock: CardNumberErrorType;
   };
-  expiration: {
+  expirationDate: {
     month: ErrorType;
     year: ErrorType;
   };

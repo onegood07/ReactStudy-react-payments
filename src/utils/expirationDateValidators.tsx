@@ -1,6 +1,6 @@
-import { ERROR_MESSAGE } from "../constants";
-import { isOnlyNumber } from "./inputFilters";
-import type { ErrorType, ExpirationDateError } from "../types";
+import { ERROR_MESSAGE, EMPTY_STRING } from "../constants";
+import { isOnlyNumber } from "./validationUtils";
+import type { ErrorType, CardFormError } from "../types";
 
 // 오늘 날짜, 연도, 월
 const today: Date = new Date();
@@ -11,11 +11,9 @@ const currentMonth: number = today.getMonth() + 1;
 const convertYear = (year: number): number =>
   Math.floor(currentYear / 100) * 100 + year;
 
-// 두자리로 월을 반환 (ex. 3월 입력 시 03월로 변환)
-export const convertMonth = (month: string): string => {
-  const monthNumber = Number(month);
-  if (isNaN(monthNumber)) return "";
-  return monthNumber < 10 ? `0${monthNumber}` : `${monthNumber}`;
+// 숫자 한자리 입력 시 두자리 반환
+const convertTwoLength = (date: string): string => {
+  return date.length === 1 ? `0${date}` : date;
 };
 
 // 2글자를 입력했는지 검증
@@ -44,13 +42,13 @@ const validExpirationMonth = (inputMonth: string): ErrorType => {
   if (!isOnlyNumber(inputMonth))
     return { hasError: true, errorMessage: ERROR_MESSAGE.ONLY_NUMBER };
 
-  if (!isLengthTwo(convertMonth(inputMonth)))
+  if (!isLengthTwo(convertTwoLength(inputMonth)))
     return { hasError: true, errorMessage: ERROR_MESSAGE.MIN_LENGTH_TWO };
 
   if (!isInValidMonthRange(Number(inputMonth)))
     return { hasError: true, errorMessage: ERROR_MESSAGE.VALID_MONTH_RANGE };
 
-  return { hasError: false, errorMessage: "" };
+  return { hasError: false, errorMessage: EMPTY_STRING };
 };
 
 // 유효기간에 입력한 '연도(Year)' 검증
@@ -58,17 +56,17 @@ const validExpirationYear = (inputYear: string): ErrorType => {
   if (!isOnlyNumber(inputYear))
     return { hasError: true, errorMessage: ERROR_MESSAGE.ONLY_NUMBER };
 
-  if (!isLengthTwo(convertMonth(inputYear)))
+  if (!isLengthTwo(convertTwoLength(inputYear)))
     return { hasError: true, errorMessage: ERROR_MESSAGE.MIN_LENGTH_TWO };
 
-  return { hasError: false, errorMessage: "" };
+  return { hasError: false, errorMessage: EMPTY_STRING };
 };
 
 // 유효기간 검증 후 에러타입 반환
 export const validExpirationDate = (
   inputMonth: string,
   inputYear: string
-): ExpirationDateError => {
+): CardFormError["expirationDate"] => {
   const monthError: ErrorType = validExpirationMonth(inputMonth);
   const yearError: ErrorType = validExpirationYear(inputYear);
 

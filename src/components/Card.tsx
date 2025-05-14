@@ -1,11 +1,12 @@
 import styles from "../styles/Card.module.css";
-import type { CardNumbers, ExpirationDate } from "../types/cardTypes";
+import type { CardData } from "../types/cardTypes";
 import { hideNumber, setCardLogo } from "../utils/cardNumberValidators";
+import { EMPTY_STRING } from "../constants";
 
 interface CardProps {
-  cardNumbers: CardNumbers;
-  expirationDate: ExpirationDate;
-  owner: string;
+  cardNumbers: CardData["numbers"];
+  expirationDate: CardData["expirationDate"];
+  owner: CardData["owner"];
 }
 
 function Card({ owner, expirationDate, cardNumbers }: CardProps) {
@@ -15,7 +16,7 @@ function Card({ owner, expirationDate, cardNumbers }: CardProps) {
   const date =
     expirationMonth.length > 0 || expirationYear.length > 0
       ? `${expirationMonth}/${expirationYear}`
-      : "";
+      : EMPTY_STRING;
   const numbers: string = `${cardNumbers.firstBlock} ${cardNumbers.secondBlock} ${hideNumber(cardNumbers.thirdBlock)} ${hideNumber(cardNumbers.fourthBlock)}`;
 
   return (

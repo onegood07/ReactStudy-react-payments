@@ -1,8 +1,5 @@
-import { ERROR_MESSAGE } from "../constants";
+import { ERROR_MESSAGE, EMPTY_STRING } from "../constants";
 import type { ErrorType } from "../types";
-
-// 대문자로 변경
-export const formatStringToUpper = (text: string): string => text.toUpperCase();
 
 // 영문만 입력했는지 검증
 const isEnglishOnly = (text: string): boolean => /^[A-Za-z\s]+$/.test(text);
@@ -25,6 +22,6 @@ export const validOwnerName = (text: string): ErrorType => {
 
   return {
     hasError: false,
-    errorMessage: "",
+    errorMessage: EMPTY_STRING,
   };
 };

@@ -1,11 +1,6 @@
-export type InputName =
-  | "firstBlock"
-  | "secondBlock"
-  | "thirdBlock"
-  | "fourthBlock"
-  | "month"
-  | "year"
-  | "owner";
+import { INPUTS } from "../constants";
+
+export type InputName = (typeof INPUTS)[keyof typeof INPUTS];
 
 export type ChangeEvent = React.ChangeEvent<HTMLInputElement> & {
   target: {
@@ -21,7 +16,7 @@ export type CardData = {
     thirdBlock: string;
     fourthBlock: string;
   };
-  expiration: {
+  expirationDate: {
     month: string;
     year: string;
   };

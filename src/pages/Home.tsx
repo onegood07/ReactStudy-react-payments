@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import CardForm from "../components/CardForm";
 import CardFormInput from "../components/CardFormInput";
 import Card from "../components/Card";
@@ -6,92 +6,125 @@ import {
   CARD_FORM_LABELS,
   CARD_LABELS,
   CARD_PLACEHOLDERS,
-} from "../constants/textConstants";
-import type {
-  ChangeEvent,
-  ExpirationDate,
-  CardNumbers,
-  CardError,
-  ExpirationDateError,
-  CardNumbersError,
-} from "../types";
+  EMPTY_STRING,
+  INPUTS,
+} from "../constants";
+import type { ChangeEvent, CardData, CardFormError } from "../types";
 import {
   formatStringToUpper,
   validOwnerName,
-  convertMonth,
   validExpirationDate,
-  filterNumber,
-  filterString,
   getFirstExpirationErrorMessage,
   getFirstErrorMessage,
   validCardNumbersBlock,
+  hideNumber,
+  onInputOnlyNumber,
+  onInputOnlyString,
 } from "../utils";
 import styles from "../styles/CardForm.module.css";
 
 function Home() {
-  const [expirationDate, setExpirationDate] = useState<ExpirationDate>({
-    month: "",
-    year: "",
+  const [expirationDate, setExpirationDate] = useState<
+    CardData["expirationDate"]
+  >({
+    month: EMPTY_STRING,
+    year: EMPTY_STRING,
   });
 
-  const [cardNumbers, setCardNumbers] = useState<CardNumbers>({
-    firstBlock: "",
-    secondBlock: "",
-    thirdBlock: "",
-    fourthBlock: "",
+  const [cardNumbers, setCardNumbers] = useState<CardData["numbers"]>({
+    firstBlock: EMPTY_STRING,
+    secondBlock: EMPTY_STRING,
+    thirdBlock: EMPTY_STRING,
+    fourthBlock: EMPTY_STRING,
   });
 
-  const [owner, setOwner] = useState("");
+  const [owner, setOwner] = useState(EMPTY_STRING);
 
-  const [cardError, setCardError] = useState<CardError>({
-    cardNumbersError: {
-      firstBlock: { hasError: false, errorMessage: "", isDisable: false },
-      secondBlock: { hasError: false, errorMessage: "", isDisable: true },
-      thirdBlock: { hasError: false, errorMessage: "", isDisable: true },
-      fourthBlock: { hasError: false, errorMessage: "", isDisable: true },
+  const [cardError, setCardError] = useState<CardFormError>({
+    numbers: {
+      firstBlock: {
+        hasError: false,
+        errorMessage: EMPTY_STRING,
+        isDisable: false,
+      },
+      secondBlock: {
+        hasError: false,
+        errorMessage: EMPTY_STRING,
+        isDisable: true,
+      },
+      thirdBlock: {
+        hasError: false,
+        errorMessage: EMPTY_STRING,
+        isDisable: true,
+      },
+      fourthBlock: {
+        hasError: false,
+        errorMessage: EMPTY_STRING,
+        isDisable: true,
+      },
     },
-    expirationDateError: {
-      month: { hasError: false, errorMessage: "" },
-      year: { hasError: false, errorMessage: "" },
+    expirationDate: {
+      month: { hasError: false, errorMessage: EMPTY_STRING },
+      year: { hasError: false, errorMessage: EMPTY_STRING },
     },
-    ownerError: { hasError: false, errorMessage: "" },
+    owner: { hasError: false, errorMessage: EMPTY_STRING },
   });
+
+  const [isAllFocusDone, setIsAllFocusDone] = useState(false);
+  const [isOnFocus, setIsOnFocus] = useState(false);
+
+  const firstRef = useRef<HTMLInputElement>(null);
+  const secondRef = useRef<HTMLInputElement>(null);
+  const thirdRef = useRef<HTMLInputElement>(null);
+  const fourthRef = useRef<HTMLInputElement>(null);
+  const monthRef = useRef<HTMLInputElement>(null);
+  const yearRef = useRef<HTMLInputElement>(null);
+  const ownerRef = useRef<HTMLInputElement>(null);
 
   const handleExpirationDateChange = (event: ChangeEvent) => {
     const name = event.target.name;
     const value = event.target.value;
 
-    const filterValue = filterNumber(
-      name === "month" ? convertMonth(value) : value,
-      2
-    );
-
     const newDate = {
       ...expirationDate,
-      [name]: filterValue,
+      [name]: value,
     };
+
+    setExpirationDate((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
 
     const validResult = validExpirationDate(newDate.month, newDate.year);
 
     setCardError((pre) => ({
       ...pre,
-      expirationDateError: validResult,
+      expirationDate: validResult,
     }));
+  };
 
-    setExpirationDate({
-      month: newDate.month,
-      year: newDate.year,
-    });
+  const handleExpirationDateBlur = (
+    date: keyof CardData["expirationDate"],
+    e: React.FocusEvent<HTMLInputElement>
+  ) => {
+    const value = e.target.value;
+
+    if (value.length === 1) {
+      setExpirationDate((prev) => ({
+        ...prev,
+        [date]: `0${value}`,
+      }));
+    }
   };
 
   const handleOwnerChange = (event: ChangeEvent) => {
-    const value = filterString(event.target.value, 20);
+    const value = event.target.value;
 
     const validResult = validOwnerName(event.target.value);
 
     setCardError((pre) => ({
       ...pre,
-      ownerError: validResult,
+      owner: validResult,
     }));
     const ownerName = formatStringToUpper(value);
     setOwner(ownerName);
@@ -103,14 +136,14 @@ function Home() {
 
     const numberBlock = {
       ...cardNumbers,
-      [name]: filterNumber(value, 4),
+      [name]: value,
     };
 
-    const result: CardNumbersError = validCardNumbersBlock(numberBlock);
+    const result: CardFormError["numbers"] = validCardNumbersBlock(numberBlock);
 
     setCardError((pre) => ({
       ...pre,
-      cardNumbersError: result,
+      numbers: result,
     }));
 
     setCardNumbers({
@@ -120,6 +153,46 @@ function Home() {
       fourthBlock: numberBlock.fourthBlock,
     });
   };
+
+  const currentInputRef = (
+    key: string
+  ): React.RefObject<HTMLInputElement> | null => {
+    switch (key) {
+      case INPUTS.FIRST_BLOCK:
+        return firstRef;
+      case INPUTS.SECOND_BLOCK:
+        return secondRef;
+      case INPUTS.THIRD_BLOCK:
+        return thirdRef;
+      case INPUTS.FOURTH_BLOCK:
+        return fourthRef;
+      case INPUTS.MONTH:
+        return monthRef;
+      case INPUTS.YEAR:
+        return yearRef;
+      case INPUTS.OWNER:
+        return ownerRef;
+      default:
+        return null;
+    }
+  };
+
+  useEffect(() => {
+    if (isAllFocusDone) return;
+    if (cardNumbers.firstBlock.length === 4) secondRef.current?.focus();
+    if (cardNumbers.secondBlock.length === 4) thirdRef.current?.focus();
+    if (cardNumbers.thirdBlock.length === 4) fourthRef.current?.focus();
+    if (cardNumbers.fourthBlock.length === 4) monthRef.current?.focus();
+  }, [cardNumbers, isAllFocusDone]);
+
+  useEffect(() => {
+    if (isAllFocusDone) return;
+    if (expirationDate.month.length === 2) yearRef.current?.focus();
+    if (expirationDate.year.length === 2) {
+      ownerRef.current?.focus();
+      setIsAllFocusDone(true);
+    }
+  }, [expirationDate, isAllFocusDone]);
 
   return (
     <>
@@ -134,73 +207,107 @@ function Home() {
         cardLabelText={CARD_LABELS.CARD_NUMBER}
       />
 
-      {Object.entries(cardNumbers).map(([key, value]) => (
-        <CardFormInput
-          key={key}
-          name={key}
-          cardInput={value}
-          cardPlaceHolder={CARD_PLACEHOLDERS.CARD_NUMBER}
-          handleChange={handleCardNumbersChange}
-          width="50px"
-          hasError={
-            cardError.cardNumbersError[key as keyof CardNumbersError].hasError
-          }
-          isDisable={
-            cardError.cardNumbersError[key as keyof CardNumbersError].isDisable
-          }
-        />
-      ))}
-      {cardError.cardNumbersError && (
-        <p className={styles.error}>
-          {getFirstErrorMessage(cardError.cardNumbersError)}
+      {Object.entries(cardNumbers).map(([key, value], index) => {
+        const isNeedHiding =
+          key === INPUTS.THIRD_BLOCK || key === INPUTS.FOURTH_BLOCK;
+
+        return (
+          <CardFormInput
+            key={key}
+            ref={currentInputRef(key)}
+            name={key}
+            cardInput={isNeedHiding && !isOnFocus ? hideNumber(value) : value}
+            maxLength={4}
+            width="50px"
+            cardPlaceHolder={CARD_PLACEHOLDERS.CARD_NUMBER}
+            hasError={
+              cardError.numbers[key as keyof CardFormError["numbers"]].hasError
+            }
+            isDisable={
+              cardError.numbers[key as keyof CardFormError["numbers"]].isDisable
+            }
+            handleChange={handleCardNumbersChange}
+            handleOnInput={onInputOnlyNumber}
+            handleOnFocus={() => setIsOnFocus(true)}
+            handleBlur={() => setIsOnFocus(false)}
+            autoFocus={index === 0}
+          />
+        );
+      })}
+
+      {
+        <p className={cardError.owner ? styles.error : styles.none}>
+          {cardError.numbers
+            ? getFirstErrorMessage(cardError.numbers)
+            : EMPTY_STRING}
         </p>
-      )}
+      }
 
       <CardForm
         cardFormLabelText={CARD_FORM_LABELS.EXPIRATION_DATE}
         cardFormLabelCaption={CARD_FORM_LABELS.EXPIRATION_DATE_CAPTION}
         cardLabelText={CARD_LABELS.EXPIRATION_DATE}
       />
+
       {Object.entries(expirationDate).map(([key, value]) => (
         <CardFormInput
           key={key}
+          ref={currentInputRef(key)}
           name={key}
           cardInput={value}
+          maxLength={2}
+          width="125px"
           cardPlaceHolder={
-            key === "month"
+            key === INPUTS.MONTH
               ? CARD_PLACEHOLDERS.EXPIRATION_MONTH
               : CARD_PLACEHOLDERS.EXPIRATION_YEAR
           }
-          handleChange={handleExpirationDateChange}
-          width="125px"
           hasError={
-            cardError.expirationDateError[key as keyof ExpirationDateError]
-              .hasError
+            cardError.expirationDate[
+              key as keyof CardFormError["expirationDate"]
+            ].hasError
+          }
+          handleChange={handleExpirationDateChange}
+          handleOnInput={onInputOnlyNumber}
+          handleBlur={(e) =>
+            handleExpirationDateBlur(
+              key as keyof CardFormError["expirationDate"],
+              e
+            )
           }
         />
       ))}
-      {cardError.expirationDateError && (
-        <p className={styles.error}>
-          {getFirstExpirationErrorMessage(cardError.expirationDateError)}
+
+      {
+        <p className={cardError.owner ? styles.error : styles.none}>
+          {cardError.expirationDate
+            ? getFirstExpirationErrorMessage(cardError.expirationDate)
+            : EMPTY_STRING}
         </p>
-      )}
+      }
 
       <CardForm
         cardFormLabelText={CARD_FORM_LABELS.CARD_OWNER}
         cardLabelText={CARD_LABELS.CARD_OWNER}
       />
       <CardFormInput
-        key="owner"
-        name="owner"
+        key={INPUTS.OWNER}
+        ref={currentInputRef(INPUTS.OWNER)}
+        name={INPUTS.OWNER}
         cardInput={owner}
-        cardPlaceHolder={CARD_PLACEHOLDERS.CARD_OWNER}
-        handleChange={handleOwnerChange}
+        maxLength={20}
         width="280px"
-        hasError={cardError.ownerError.hasError}
+        cardPlaceHolder={CARD_PLACEHOLDERS.CARD_OWNER}
+        hasError={cardError.owner.hasError}
+        handleChange={handleOwnerChange}
+        handleOnInput={onInputOnlyString}
       />
-      {cardError.ownerError && (
-        <p className={styles.error}>{cardError.ownerError.errorMessage}</p>
-      )}
+
+      {
+        <p className={cardError.owner ? styles.error : styles.none}>
+          {cardError.owner ? cardError.owner.errorMessage : EMPTY_STRING}
+        </p>
+      }
     </>
   );
 }

@@ -1,2 +1,2 @@
 export * from "./cardTypes";
-export * from "./errorType";
+export * from "./errorTypes";

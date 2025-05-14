@@ -1,3 +1,3 @@
 export * from "./errorMessege";
 export * from "./textConstants";
-export * from "./usingNumbers";
+export * from "./cardConstants";

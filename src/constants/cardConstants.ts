@@ -11,4 +11,12 @@ export const CARD_PREFIX_LENGTH = {
 
 export const CARD_NUMBER_MAX_LENGTH = 4;
 
-export const MASK_SYMBOL = "*";
+export const CARD_INFORMATION = {
+  EXPIRATION_DATE: ["month", "year"] as const,
+  CARD_NUMBER_BLOCK: [
+    "firstBlock",
+    "secondBlock",
+    "thirdBlock",
+    "fourthBlock",
+  ] as const,
+};

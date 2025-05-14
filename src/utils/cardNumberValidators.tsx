@@ -1,14 +1,16 @@
-import { ERROR_MESSAGE } from "../constants";
-import { isOnlyNumber } from "./inputFilters";
-import visa from "../assets/Visa.svg";
-import master from "../assets/Mastercard.svg";
-import { CardNumberBlockError, CardNumbers, CardNumbersError } from "../types";
 import {
+  ERROR_MESSAGE,
   CARD_LOGO_NUMBER,
   MASK_SYMBOL,
   CARD_PREFIX_LENGTH,
   CARD_NUMBER_MAX_LENGTH,
+  EMPTY_STRING,
+  CARD_INFORMATION,
 } from "../constants";
+import { isOnlyNumber } from "./validationUtils";
+import visa from "../assets/Visa.svg";
+import master from "../assets/Mastercard.svg";
+import { CardFormError, CardData, CardNumberErrorType } from "../types";
 
 // Visa 또는 Master 로고 설정
 export const setCardLogo = (value: string): string => {
@@ -20,15 +22,15 @@ export const setCardLogo = (value: string): string => {
     first <= CARD_LOGO_NUMBER.MASTER_MAX_NUMBER
   )
     return master;
-  return "";
+  return EMPTY_STRING;
 };
 
-// 숫자를 '*' 처리
+// 숫자를 '●' 처리
 export const hideNumber = (value: string): string =>
   value.replace(/[0-9]/g, MASK_SYMBOL);
 
 // 카드 번호 검증
-export const validCardNumbers = (block: string): CardNumberBlockError => {
+export const validCardNumbers = (block: string): CardNumberErrorType => {
   if (!isOnlyNumber(block))
     return {
       hasError: true,
@@ -38,45 +40,76 @@ export const validCardNumbers = (block: string): CardNumberBlockError => {
 
   return {
     hasError: false,
-    errorMessage: "",
+    errorMessage: EMPTY_STRING,
     isDisable: false,
+  };
+};
+
+// 해당 블록이 숫자로 전부 채워졌는지 확인
+const isBlockFilledWithNumbers = (numbers: string, length: number): boolean => {
+  return numbers.length === length;
+};
+
+// 이전 블록의 값이 숫자로 전부 채워졌는지 확인
+const validBlockIsFull = (
+  prevBlock: string,
+  currentBlock: string
+): CardNumberErrorType => {
+  const isPrevFilled = isBlockFilledWithNumbers(
+    prevBlock,
+    CARD_NUMBER_MAX_LENGTH
+  );
+  const isCurrentFilled = isBlockFilledWithNumbers(
+    currentBlock,
+    CARD_NUMBER_MAX_LENGTH
+  );
+
+  return {
+    hasError: !isPrevFilled || !isCurrentFilled,
+    errorMessage:
+      !isPrevFilled || !isCurrentFilled
+        ? ERROR_MESSAGE.REQUIRE_FOUR_DIGIT_NUMBER
+        : EMPTY_STRING,
+    isDisable: !isPrevFilled,
   };
 };
 
 // 카드 번호 블록 검증
 export const validCardNumbersBlock = (
-  cardNumbers: CardNumbers
-): CardNumbersError => {
-  type CardNumbersKeys = keyof CardNumbers;
-  const keys: CardNumbersKeys[] = [
-    "firstBlock",
-    "secondBlock",
-    "thirdBlock",
-    "fourthBlock",
-  ];
-  const result: CardNumbersError = {
-    firstBlock: { hasError: false, errorMessage: "", isDisable: false },
-    secondBlock: { hasError: false, errorMessage: "", isDisable: false },
-    thirdBlock: { hasError: false, errorMessage: "", isDisable: false },
-    fourthBlock: { hasError: false, errorMessage: "", isDisable: false },
+  cardNumbers: CardData["numbers"]
+): CardFormError["numbers"] => {
+  const result: CardFormError["numbers"] = {
+    firstBlock: {
+      hasError: false,
+      errorMessage: EMPTY_STRING,
+      isDisable: false,
+    },
+    secondBlock: {
+      hasError: false,
+      errorMessage: EMPTY_STRING,
+      isDisable: false,
+    },
+    thirdBlock: {
+      hasError: false,
+      errorMessage: EMPTY_STRING,
+      isDisable: false,
+    },
+    fourthBlock: {
+      hasError: false,
+      errorMessage: EMPTY_STRING,
+      isDisable: false,
+    },
   };
 
-  keys.forEach((key, index) => {
+  const cardNumberKeys = CARD_INFORMATION.CARD_NUMBER_BLOCK;
+
+  cardNumberKeys.forEach((key, index) => {
     if (index === 0) return;
 
-    const preValue = cardNumbers[keys[index - 1]];
-    const currentValue = cardNumbers[keys[index]];
-    const isPrevFilled = preValue.length === CARD_NUMBER_MAX_LENGTH;
-    const isCurrentFilled = currentValue.length === CARD_NUMBER_MAX_LENGTH;
-
-    result[key] = {
-      hasError: !isPrevFilled || !isCurrentFilled,
-      errorMessage:
-        !isPrevFilled || !isCurrentFilled
-          ? ERROR_MESSAGE.REQUIRE_FOUR_DIGIT_NUMBER
-          : "",
-      isDisable: !isPrevFilled,
-    };
+    result[key] = validBlockIsFull(
+      cardNumbers[cardNumberKeys[index - 1]],
+      cardNumbers[cardNumberKeys[index]]
+    );
   });
 
   return result;
