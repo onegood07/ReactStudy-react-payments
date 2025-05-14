@@ -1,11 +1,7 @@
-import "./App.css";
+import Home from "../src/pages/Home";
 
 function App() {
-  return (
-    <>
-      <h1>React Payments</h1>
-    </>
-  );
+  return <Home />;
 }
 
 export default App;
